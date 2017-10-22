@@ -2,6 +2,7 @@ import re
 import sys
 import logging
 import numpy as np
+import argparse
 
 
 logging.basicConfig(stream=sys.stdout, level=logging.DEBUG)
@@ -80,9 +81,18 @@ class Hopfield():
 
 
 if __name__ == '__main__':
+    '''
+    Example:
+        python main.py mnist_train.csv mnist_test.csv
+        python main.py simplified_digit.csv simplified_digit.csv
+    '''
+    parser = argparse.ArgumentParser()
+    parser.add_argument('train_file_name')
+    parser.add_argument('test_file_name')
 
-    train_file_name = 'mnist_train.csv'
-    test_file_name = 'mnist_test.csv'
+    args = parser.parse_args()
+    train_file_name = args.test_file_name
+    test_file_name = args.test_file_name
 
     h = Hopfield()
 
