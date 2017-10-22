@@ -83,7 +83,9 @@ def _get_training_data(filename):
     ret = []
     with open(filename, 'w') as file:
         for num, im in number_pixel.items():
-            to_write = ','.join([str(n) for n in [num] + _matrix_to_array(im)])
+            to_write = ','.join([
+                str(n) for n in [num] + [255 * x for x in _matrix_to_array(im)]]
+            )
             to_write += '\n'
             file.write(to_write)
 
