@@ -8,13 +8,13 @@ import argparse
 logging.basicConfig(stream=sys.stdout, level=logging.DEBUG)
 
 
-def mnist_gen(filename, thre=0.5):
+def mnist_gen(filename, thre=0.5, im_max=255.):
     with open(filename,'r') as f:
         for line in f:
             output = line.strip().split(',')
             
             label = int(output[0])
-            data = [1 if int(x)/255. > thre else 0 for x in output[1:]]
+            data = [1 if int(x)/im_max > thre else 0 for x in output[1:]]
 
             label_one_hot = [0 for _ in range(10)]
             label_one_hot[label] = 1
@@ -28,21 +28,20 @@ class Hopfield():
         self.dim = None
         self.T = None
 
-    def train(self, filename, train_max=1000):
-        train_gen = mnist_gen(filename)
-        for i_data, (label, label_one_hot, data) in enumerate(train_gen):
+    def train_on_file(self, train_data_gen, train_max=1000):
+        for i_data, (label, label_one_hot, data) in enumerate(train_data_gen):
             if not self.dim:
                 self.setup(data)
 
             if i_data % 10 == 0:
                 logging.info(i_data)
 
-            self._train(label, label_one_hot, data)
+            self.train(label, label_one_hot, data)
 
             if i_data > train_max:
                 break
 
-    def _train(self, label, label_one_hot, data):
+    def train(self, label, label_one_hot, data):
         data = np.array(data)
         for i in range(self.dim):
             if data[i] > 0:
@@ -57,15 +56,14 @@ class Hopfield():
         self.T = np.zeros((self.dim, self.dim))
         return
 
-    def test(self, filename, test_max=10):
+    def test_on_file(self, test_data_gen, test_max=10):
         logging.info('starting test')
         
-        test_gen = mnist_gen(filename)
-        for i_data, (label, label_one_hot, data) in enumerate(test_gen):
+        for i_data, (label, label_one_hot, data) in enumerate(test_data_gen):
             logging.info(i_data)
-            self._test(data)
+            self.test(data)
 
-    def _test(self, data, runs=None):
+    def test(self, data, runs=None):
         if not runs:
             runs = 100 * self.dim
 
@@ -76,28 +74,28 @@ class Hopfield():
             else:
                 V[pos] = 0
 
-        import pdb; pdb.set_trace()
         return V
 
 
 if __name__ == '__main__':
     '''
     Example:
-        python main.py mnist_train.csv mnist_test.csv
-        python main.py simplified_digit.csv simplified_digit.csv
+        python main.py mnist_train.csv mnist_test.csv 255
+        python main.py simplified_digit.csv simplified_digit.csv 1
     '''
+    
     parser = argparse.ArgumentParser()
     parser.add_argument('train_file_name')
     parser.add_argument('test_file_name')
+    parser.add_argument('im_max')
 
     args = parser.parse_args()
     train_file_name = args.test_file_name
     test_file_name = args.test_file_name
+    im_max = float(args.im_max)
 
     h = Hopfield()
-
-    h.train(train_file_name, train_max=100)
-
-    h.test(test_file_name)
+    h.train_on_file(mnist_gen(train_file_name, im_max), train_max=100)
+    h.test_on_file(mnist_gen(test_file_name, im_max))
 
     print('done')
