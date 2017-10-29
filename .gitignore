@@ -2,4 +2,7 @@
 **/raw_data/
 **/*.csv
 **/__pycache__/
+**/.ipynb_checkpoints/
+**/.DS_Store
 **/.idea/
+**/*.pyc
